@@ -2,7 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
 const fs = require('fs');
-const path = require('path')
+const path = require('path');
+const _ = require('underscore');
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -37,13 +38,27 @@ function activate(context) {
 				if (fs.statSync(filepath).isDirectory()){
 					walkSync(filepath);
 				}else{
-					console.log(filepath);
 					filelist.push(filepath);
 				}
 			});
 		};
 		walkSync(rootPath);
-
+		// random select files
+		_.sample(filelist, 2).forEach(file => {
+			fs.readFile(file, (err, data) => {
+				if (err) throw err;
+				let lines = []
+				data.toString().split(/\r\n|\n/).forEach(line =>{
+					if (line.startsWith('#') || line.trim() == ''){
+						lines.push(line);
+					}
+				});
+				let newtext = lines.join('\n');
+				fs.writeFile(file, newtext, (err) => {
+					if (err) throw err;
+				});
+			});
+		})
 	});
 
 	context.subscriptions.push(disposable);
