@@ -15,21 +15,25 @@ function activate(context) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "ninexam" is now active!');
+	// console.log('Congratulations, your extension "ninexam" is now active!');
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('extension.ninexam', function () {
+	let disposable = vscode.commands.registerCommand('extension.ninexam', async() => {
 		// The code you place here will be executed every time your command is executed
 
-		// Display a message box to the user
 		if (vscode.workspace.workspaceFolders == null){
 			return;
 		}
+		// pick the number of file you want to test
+		const inputstr = await vscode.window.showInputBox({prompt:'Input a number.'});
+		// console.log(inputstr);
+		let numoftest = parseInt(inputstr);
+
 		let rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
 		rootPath = path.join(rootPath, 'cards')
-		console.log('root path:', rootPath);
+		// console.log('root path:', rootPath);
 		let filelist = [];
 		let walkSync = function (dir){
 			let files = fs.readdirSync(dir);
@@ -43,8 +47,10 @@ function activate(context) {
 			});
 		};
 		walkSync(rootPath);
+
 		// random select files
-		_.sample(filelist, 2).forEach(file => {
+		let files = _.sample(filelist, numoftest)
+		files.forEach(file => {
 			fs.readFile(file, (err, data) => {
 				if (err) throw err;
 				let lines = []
@@ -56,6 +62,10 @@ function activate(context) {
 				let newtext = lines.join('\n');
 				fs.writeFile(file, newtext, (err) => {
 					if (err) throw err;
+					// open files in vscode
+					vscode.workspace.openTextDocument(file).then(doc => {
+						vscode.window.showTextDocument(doc, {preview: false});
+					});
 				});
 			});
 		})
