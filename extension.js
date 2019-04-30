@@ -1,6 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
+const fs = require('fs');
+const path = require('path')
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -17,11 +19,31 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('extension.helloWorld', function () {
+	let disposable = vscode.commands.registerCommand('extension.ninexam', function () {
 		// The code you place here will be executed every time your command is executed
 
 		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World!');
+		if (vscode.workspace.workspaceFolders == null){
+			return;
+		}
+		let rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+		rootPath = path.join(rootPath, 'cards')
+		console.log('root path:', rootPath);
+		let filelist = [];
+		let walkSync = function (dir){
+			let files = fs.readdirSync(dir);
+			files.forEach(file => {
+				let filepath = path.join(dir, file);
+				if (fs.statSync(filepath).isDirectory()){
+					walkSync(filepath);
+				}else{
+					console.log(filepath);
+					filelist.push(filepath);
+				}
+			});
+		};
+		walkSync(rootPath);
+
 	});
 
 	context.subscriptions.push(disposable);
