@@ -1,6 +1,7 @@
 {
 	"name": "ninexam",
 	"displayName": "ninexam",
+	"publisher": "ning",
 	"description": "",
 	"version": "0.0.1",
 	"engines": {
